@@ -9,29 +9,31 @@ ctx.canvas.height = SIZE;
 ctx.fillStyle = '#777777';
 ctx.fillRect(0, 0, SIZE, SIZE);
 
+function draw() {
+  ctx.beginPath();
+  ctx.moveTo(origin.x, origin.y);
+  origin.length *= (2 / 3);
+
+  if (origin.angle === Math.PI) {
+    origin.y = origin.length;
+  } else {
+    origin.x += Math.cos(origin.angle % Math.PI) * origin.length;
+    origin.y -= Math.sin(origin.angle % Math.PI) * origin.length;
+  }
+
+  ctx.lineTo(origin.x, origin.y);
+  console.log(origin.x, origin.y);
+  ctx.strokeStyle = 'white';
+  ctx.stroke();
+  ctx.closePath();
+}
+
 const origin = {
   x: SIZE / 2,
   y: SIZE,
   length: 400 * (2 / 3),
+  angle: Math.PI,
 };
 
-ctx.beginPath();
-ctx.moveTo(origin.x, origin.y);
-origin.y *= (2 / 3);
-origin.length *= (2 / 3);
-ctx.lineTo(origin.x, origin.y);
-ctx.strokeStyle = 'white';
-ctx.stroke();
-ctx.closePath();
+draw();
 
-ctx.beginPath();
-ctx.moveTo(origin.x, origin.y);
-origin.length *= (2 / 3);
-
-origin.x += Math.cos(Math.PI / 4) * origin.length;
-origin.y -= Math.sin(Math.PI / 4) * origin.length;
-
-ctx.lineTo(origin.x, origin.y);
-ctx.strokeStyle = 'white';
-ctx.stroke();
-ctx.closePath();
