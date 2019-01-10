@@ -16,6 +16,10 @@ const origin = {
   angle: -Math.PI / 2,
 };
 
+function randomFactor(min, max) {
+  return min + (max - min) * Math.random();
+}
+
 
 function drawBranch(x, y, a, l) {
   const newX = x + Math.cos(a) * l;
