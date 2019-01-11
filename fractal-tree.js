@@ -61,5 +61,7 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
   }
 }
 
-drawBranch(origin.x, origin.y, origin.angle, origin.length, origin.lineWidth, 0);
+for (let i = 0; i < 5; i++) {
+  drawBranch(randomFactor(400, WIDTH - 400), origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2), randomFactor(1, 10), 0);
+}
 
