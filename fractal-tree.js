@@ -16,7 +16,7 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 1;
+const MAX_TREES = 10;
 const MAX_DEPTH = 10;
 const FRAME_RATE = 5;
 
@@ -55,6 +55,28 @@ function buildWaypoints(startX, startY, endX, endY) {
   return waypoints;
 }
 
+function dropLeaves() {
+  leaves.sort((a, b) => {
+    if (a.y > b.y) {
+      return 1;
+    } return -1;
+  });
+  leafCtx.clearRect(0, 0, WIDTH, HEIGHT);
+  for (let i = 0; i < leaves.length; i++) {
+    leaves[i].y += 1;
+    if (leaves[i].y > HEIGHT) {
+      leaves[i].y = HEIGHT;
+    }
+    leafCtx.beginPath();
+    leafCtx.arc(leaves[i].x, leaves[i].y, 1, 0, 2 * Math.PI);
+    leafCtx.strokeStyle = '#d822a5';
+    leafCtx.lineWidth = 1;
+    leafCtx.stroke();
+  }
+  if (leaves[0].y < HEIGHT) {
+    requestAnimationFrame(dropLeaves);
+  }
+}
 
 function drawBranch(x, y, a, l, strokeWidth, count) {
   let frameCount = 1;
@@ -121,7 +143,7 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
           randomFactor(1, 10), 0,
         );
       } else {
-        console.log(leaves);
+        dropLeaves();
       }
     }
   }
