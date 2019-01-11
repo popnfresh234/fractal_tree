@@ -1,11 +1,29 @@
+const WIDTH = window.innerWidth;
+const HEIGHT = window.innerHeight;
+
 const canvas = document.getElementById('fractal_canvas');
+const leafCanvas = document.getElementById('leaf_canvas');
+
+const leafCtx = leafCanvas.getContext('2d');
+leafCanvas.width = window.innerWidth;
+leafCanvas.height = window.innerHeight;
+leafCtx.canvas.width = WIDTH;
+leafCtx.canvas.height = HEIGHT;
+
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const HEIGHT = window.innerHeight;
-const WIDTH = window.innerWidth;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
+
+const MAX_TREES = 1;
+const MAX_DEPTH = 10;
+const FRAME_RATE = 5;
+
+
+let branchesFinished = 0;
+let treesCompleted = 0;
+const leaves = [];
 
 ctx.fillStyle = '#777777';
 ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -26,13 +44,12 @@ const origin = {
 
 
 function buildWaypoints(startX, startY, endX, endY) {
-  const frameRate = 60;
   const waypoints = [];
   const dx = endX - startX;
   const dy = endY - startY;
-  for (let i = 0; i < frameRate + 2; i++) {
-    const x = startX + dx * i / frameRate;
-    const y = startY + dy * i / frameRate;
+  for (let i = 0; i < FRAME_RATE + 2; i++) {
+    const x = startX + dx * i / FRAME_RATE;
+    const y = startY + dy * i / FRAME_RATE;
     waypoints.push({ x, y });
   }
   return waypoints;
@@ -62,7 +79,8 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
     animateLine();
   }
 
-  if (count <= 10) {
+
+  if (count <= MAX_DEPTH) {
     const newCount = count + 1;
     const newX = x + Math.cos(a) * l;
     const newY = y + Math.sin(a) * l;
@@ -84,14 +102,35 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
       );
     });
   } else {
-    ctx.beginPath();
-    ctx.arc(x, y, 1, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#d822a5';
-    ctx.stroke();
+    branchesFinished++;
+    leafCtx.beginPath();
+    leaves.push({ x, y });
+    leafCtx.arc(x, y, 1, 0, 2 * Math.PI);
+    leafCtx.strokeStyle = '#d822a5';
+    leafCtx.lineWidth = 1;
+    leafCtx.stroke();
+
+    // Check and see if all branches have been drawn, if so draw next tree
+    if (branchesFinished === 2 ** (MAX_DEPTH + 1)) {
+      branchesFinished = 0;
+      treesCompleted++;
+      if (treesCompleted < MAX_TREES) {
+        drawBranch(
+          randomFactor(400, WIDTH - 400),
+          origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
+          randomFactor(1, 10), 0,
+        );
+      } else {
+        console.log(leaves);
+      }
+    }
   }
 }
 
-for (let i = 0; i < 10; i++) {
-  drawBranch(randomFactor(400, WIDTH - 400), origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2), randomFactor(1, 10), 0);
-}
+
+drawBranch(
+  randomFactor(400, WIDTH - 400),
+  origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
+  randomFactor(1, 10), 0,
+);
 
