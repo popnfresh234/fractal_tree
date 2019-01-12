@@ -16,20 +16,24 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 10;
+const MAX_TREES = 2;
 const MAX_DEPTH = 10;
 const FRAME_RATE = 5;
 
 
 let branchesFinished = 0;
 let treesCompleted = 0;
-const leaves = [];
+let leaves = [];
 
 ctx.fillStyle = '#777777';
 ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
 function randomFactor(min, max) {
   return min + (max - min) * Math.random();
+}
+
+function randomInt(max) {
+  Math.floor(Math.random() * max);
 }
 
 const origin = {
@@ -56,26 +60,64 @@ function buildWaypoints(startX, startY, endX, endY) {
 }
 
 function dropLeaves() {
-  leaves.sort((a, b) => {
-    if (a.y > b.y) {
-      return 1;
-    } return -1;
-  });
+  let usedLeaves = [];
   leafCtx.clearRect(0, 0, WIDTH, HEIGHT);
-  for (let i = 0; i < leaves.length; i++) {
-    leaves[i].y += 1;
-    if (leaves[i].y > HEIGHT) {
-      leaves[i].y = HEIGHT;
+  while (leaves.length) {
+    // Pick a random leaf and remove from array
+    const leaf = leaves.splice(randomInt(leaves.length), 1)[0];
+    // Move the leaf down and left/right
+    const stickyTest = randomFactor(0, 100);
+    if (stickyTest < leaf.stickyThreshold) {
+      leaf.dropped = true;
     }
+
+    if (leaf.dropped) {
+      leaf.y += randomFactor(0, 1);
+      if (leaf.y > HEIGHT) {
+        leaf.y = HEIGHT;
+      } else {
+        leaf.x += randomFactor(-2, 2.5);
+      }
+    }
+    // add leaf to used leaves
+    usedLeaves.push(leaf);
+    // draw Leaf
     leafCtx.beginPath();
-    leafCtx.arc(leaves[i].x, leaves[i].y, 1, 0, 2 * Math.PI);
+    leafCtx.arc(leaf.x, leaf.y, 1, 0, 2 * Math.PI);
     leafCtx.strokeStyle = '#d822a5';
     leafCtx.lineWidth = 1;
     leafCtx.stroke();
   }
-  if (leaves[0].y < HEIGHT) {
+  // Reset arrays
+  leaves = usedLeaves;
+  usedLeaves = [];
+
+  if (leaves.filter(leaf => leaf.y < HEIGHT)) {
     requestAnimationFrame(dropLeaves);
   }
+
+  // leaves.sort((a, b) => {
+  //   if (a.y > b.y) {
+  //     return 1;
+  //   } return -1;
+  // });
+  // leafCtx.clearRect(0, 0, WIDTH, HEIGHT);
+  // for (let i = 0; i < leaves.length; i++) {
+  //   leaves[i].y += randomFactor(0, 1);
+  //   if (leaves[i].y > HEIGHT) {
+  //     leaves[i].y = HEIGHT;
+  //   } else {
+  //     leaves[i].x += randomFactor(-2, 2.5);
+  //   }
+  //   leafCtx.beginPath();
+  //   leafCtx.arc(leaves[i].x, leaves[i].y, 1, 0, 2 * Math.PI);
+  //   leafCtx.strokeStyle = '#d822a5';
+  //   leafCtx.lineWidth = 1;
+  //   leafCtx.stroke();
+  // }
+  // if (leaves[0].y < HEIGHT) {
+  //   requestAnimationFrame(dropLeaves);
+  // }
 }
 
 function drawBranch(x, y, a, l, strokeWidth, count) {
@@ -126,7 +168,9 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
   } else {
     branchesFinished++;
     leafCtx.beginPath();
-    leaves.push({ x, y });
+    leaves.push({
+      x, y, stickyThreshold: randomFactor(0, 1), dropped: false,
+    });
     leafCtx.arc(x, y, 1, 0, 2 * Math.PI);
     leafCtx.strokeStyle = '#d822a5';
     leafCtx.lineWidth = 1;
