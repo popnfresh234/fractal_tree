@@ -19,8 +19,8 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 5;
-const MAX_DEPTH = 10;
+const MAX_TREES = 10;
+const MAX_DEPTH = 8;
 const FRAME_RATE = 5;
 
 
@@ -137,6 +137,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
     const newCount = count + 1;
     const newX = x + Math.cos(a) * l;
     const newY = y + Math.sin(a) * l;
+
     waypoints = buildWaypoints(x, y, newX, newY);
     drawLine(() => {
       drawBranch(
@@ -156,20 +157,23 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
         color,
       );
     });
+    if (count === MAX_DEPTH) {
+      leafCtx.beginPath();
+      leaves.push({
+        x: newX,
+        y: newY,
+        color,
+        stickyThreshold: randomFactor(0, 1),
+        dropped: false,
+      });
+      leafCtx.fillStyle = color;
+      leafCtx.fillRect(newX, newY, 2, 2);
+      leafCtx.lineWidth = 1;
+      leafCtx.stroke();
+    }
   } else {
     branchesFinished++;
-    leafCtx.beginPath();
-    leaves.push({
-      x,
-      y,
-      color,
-      stickyThreshold: randomFactor(0, 1),
-      dropped: false,
-    });
-    leafCtx.fillStyle = color;
-    leafCtx.fillRect(x, y, 2, 2);
-    leafCtx.lineWidth = 1;
-    leafCtx.stroke();
+
 
     // Check and see if all branches have been drawn, if so draw next tree
     if (branchesFinished === 2 ** (MAX_DEPTH + 1)) {
@@ -177,7 +181,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
       treesCompleted++;
       if (treesCompleted < MAX_TREES) {
         drawBranch(
-          randomFactor(400, WIDTH - 400),
+          randomFactor(100, WIDTH - 100),
           origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
           randomFactor(1, 10),
           0,
@@ -192,7 +196,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
 
 
 drawBranch(
-  randomFactor(400, WIDTH - 400),
+  randomFactor(100, WIDTH - 100),
   origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
   randomFactor(1, 10),
   0,
