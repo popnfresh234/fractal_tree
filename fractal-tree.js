@@ -2,6 +2,8 @@ const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 const COLORS = ['#E43030', '#de7f28', '#E8E617', '#BDE3E4', '#56C6CE'];
 
+const floor = [];
+
 const canvas = document.getElementById('fractal_canvas');
 const leafCanvas = document.getElementById('leaf_canvas');
 
@@ -17,7 +19,7 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 10;
+const MAX_TREES = 2;
 const MAX_DEPTH = 10;
 const FRAME_RATE = 5;
 
@@ -32,6 +34,7 @@ ctx.fillRect(0, 0, WIDTH, HEIGHT);
 function randomFactor(min, max) {
   return min + (max - min) * Math.random();
 }
+
 
 function randomInt(max) {
   return Math.floor(Math.random() * max);
@@ -70,28 +73,39 @@ function dropLeaves() {
       leaf.dropped = true;
     }
 
-    if (leaf.dropped) {
+    if (leaf.dropped && !leaf.isDown) {
       leaf.y += randomFactor(0, 1);
-      if (leaf.y > HEIGHT) {
-        leaf.y = HEIGHT;
-      } else {
-        leaf.x += randomFactor(-2, 2.5);
-      }
+      leaf.x += randomFactor(-2, 2.5);
     }
     // add leaf to used leaves
-    usedLeaves.push(leaf);
+    if (leaf.y < HEIGHT) {
+      usedLeaves.push(leaf);
+    } else {
+      leaf.x = Math.floor(leaf.x);
+      leaf.y = HEIGHT - 2;
+      if (leaf.x % 2) {
+        leaf.x += 1;
+      }
+      leaf.isDown = true;
+      if (!floor[leaf.x]) {
+        floor[leaf.x] = leaf.x;
+        usedLeaves.push(leaf);
+      }
+    }
     // draw Leaf
     leafCtx.beginPath();
-    leafCtx.arc(leaf.x, leaf.y, 1, 0, 2 * Math.PI);
-    leafCtx.strokeStyle = leaf.color;
+    leafCtx.fillStyle = leaf.color;
+    leafCtx.moveTo(leaf.x, leaf.y);
+    leafCtx.fillRect(Math.floor(leaf.x), Math.floor(leaf.y), 2, 2);
     leafCtx.lineWidth = 1;
     leafCtx.stroke();
   }
   // Reset arrays
+  console.table(floor);
   leaves = usedLeaves;
   usedLeaves = [];
 
-  if (leaves.filter(leaf => leaf.y < HEIGHT)) {
+  if (leaves.filter(leaf => leaf.y < HEIGHT - 2)) {
     requestAnimationFrame(dropLeaves);
   }
 }
@@ -153,8 +167,8 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
       stickyThreshold: randomFactor(0, 1),
       dropped: false,
     });
-    leafCtx.arc(x, y, 1, 0, 2 * Math.PI);
-    leafCtx.strokeStyle = color;
+    leafCtx.fillStyle = color;
+    leafCtx.fillRect(x, y, 2, 2);
     leafCtx.lineWidth = 1;
     leafCtx.stroke();
 
