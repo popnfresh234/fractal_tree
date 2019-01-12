@@ -19,7 +19,7 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 2;
+const MAX_TREES = 5;
 const MAX_DEPTH = 10;
 const FRAME_RATE = 5;
 
@@ -101,7 +101,6 @@ function dropLeaves() {
     leafCtx.stroke();
   }
   // Reset arrays
-  console.table(floor);
   leaves = usedLeaves;
   usedLeaves = [];
 
