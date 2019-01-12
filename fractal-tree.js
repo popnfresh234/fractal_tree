@@ -1,5 +1,6 @@
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
+const COLORS = ['#E43030', '#de7f28', '#E8E617', '#BDE3E4', '#56C6CE'];
 
 const canvas = document.getElementById('fractal_canvas');
 const leafCanvas = document.getElementById('leaf_canvas');
@@ -16,7 +17,7 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 2;
+const MAX_TREES = 10;
 const MAX_DEPTH = 10;
 const FRAME_RATE = 5;
 
@@ -33,7 +34,7 @@ function randomFactor(min, max) {
 }
 
 function randomInt(max) {
-  Math.floor(Math.random() * max);
+  return Math.floor(Math.random() * max);
 }
 
 const origin = {
@@ -63,9 +64,7 @@ function dropLeaves() {
   let usedLeaves = [];
   leafCtx.clearRect(0, 0, WIDTH, HEIGHT);
   while (leaves.length) {
-    // Pick a random leaf and remove from array
     const leaf = leaves.splice(randomInt(leaves.length), 1)[0];
-    // Move the leaf down and left/right
     const stickyTest = randomFactor(0, 100);
     if (stickyTest < leaf.stickyThreshold) {
       leaf.dropped = true;
@@ -84,7 +83,7 @@ function dropLeaves() {
     // draw Leaf
     leafCtx.beginPath();
     leafCtx.arc(leaf.x, leaf.y, 1, 0, 2 * Math.PI);
-    leafCtx.strokeStyle = '#d822a5';
+    leafCtx.strokeStyle = leaf.color;
     leafCtx.lineWidth = 1;
     leafCtx.stroke();
   }
@@ -95,32 +94,9 @@ function dropLeaves() {
   if (leaves.filter(leaf => leaf.y < HEIGHT)) {
     requestAnimationFrame(dropLeaves);
   }
-
-  // leaves.sort((a, b) => {
-  //   if (a.y > b.y) {
-  //     return 1;
-  //   } return -1;
-  // });
-  // leafCtx.clearRect(0, 0, WIDTH, HEIGHT);
-  // for (let i = 0; i < leaves.length; i++) {
-  //   leaves[i].y += randomFactor(0, 1);
-  //   if (leaves[i].y > HEIGHT) {
-  //     leaves[i].y = HEIGHT;
-  //   } else {
-  //     leaves[i].x += randomFactor(-2, 2.5);
-  //   }
-  //   leafCtx.beginPath();
-  //   leafCtx.arc(leaves[i].x, leaves[i].y, 1, 0, 2 * Math.PI);
-  //   leafCtx.strokeStyle = '#d822a5';
-  //   leafCtx.lineWidth = 1;
-  //   leafCtx.stroke();
-  // }
-  // if (leaves[0].y < HEIGHT) {
-  //   requestAnimationFrame(dropLeaves);
-  // }
 }
 
-function drawBranch(x, y, a, l, strokeWidth, count) {
+function drawBranch(x, y, a, l, strokeWidth, count, color) {
   let frameCount = 1;
   let waypoints = [];
 
@@ -156,6 +132,7 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
         l * randomFactor(0.5, 0.9),
         strokeWidth * 0.7,
         newCount,
+        color,
       );
       drawBranch(
         newX, newY,
@@ -163,16 +140,21 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
         l * randomFactor(0.5, 0.9),
         strokeWidth * 0.7,
         newCount,
+        color,
       );
     });
   } else {
     branchesFinished++;
     leafCtx.beginPath();
     leaves.push({
-      x, y, stickyThreshold: randomFactor(0, 1), dropped: false,
+      x,
+      y,
+      color,
+      stickyThreshold: randomFactor(0, 1),
+      dropped: false,
     });
     leafCtx.arc(x, y, 1, 0, 2 * Math.PI);
-    leafCtx.strokeStyle = '#d822a5';
+    leafCtx.strokeStyle = color;
     leafCtx.lineWidth = 1;
     leafCtx.stroke();
 
@@ -184,7 +166,9 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
         drawBranch(
           randomFactor(400, WIDTH - 400),
           origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
-          randomFactor(1, 10), 0,
+          randomFactor(1, 10),
+          0,
+          COLORS[randomInt(COLORS.length)],
         );
       } else {
         dropLeaves();
@@ -197,6 +181,8 @@ function drawBranch(x, y, a, l, strokeWidth, count) {
 drawBranch(
   randomFactor(400, WIDTH - 400),
   origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
-  randomFactor(1, 10), 0,
+  randomFactor(1, 10),
+  0,
+  COLORS[randomInt(COLORS.length)],
 );
 
