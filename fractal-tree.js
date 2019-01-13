@@ -25,9 +25,10 @@ canvas.height = window.innerHeight;
 ctx.canvas.width = WIDTH;
 ctx.canvas.height = HEIGHT;
 
-const MAX_TREES = 10;
-const MAX_DEPTH = 8;
-const FRAME_RATE = 5;
+const MARGIN = 200;
+const MAX_TREES = 3;
+const MAX_DEPTH = 10;
+const FRAME_RATE = 7;
 const BASE_COLOR = 'rgb(255, 255, 255)';
 const BROWN = 'rgb(119, 81, 59)';
 const GREEN = 'rgb(80, 127, 62)';
@@ -56,6 +57,8 @@ const origin = {
   angleIncrement: Math.PI / 8,
   randomAngleMax: 1.5,
   lineWidth: 10,
+  minLengthFactor: 0.05,
+  maxLengthFactor: 0.25,
 };
 
 function interpolateColor(startColor, endColor, factor) {
@@ -219,8 +222,8 @@ function drawBranch(x, y, a, l, strokeWidth, count, color, trunkColors) {
         const treeColor = COLORS[randomInt(COLORS.length)];
         const trunkColors = interpolateColors(BASE_COLOR, treeColor, MAX_DEPTH);
         drawBranch(
-          randomFactor(100, WIDTH - 100),
-          origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
+          randomFactor(MARGIN, WIDTH - MARGIN),
+          origin.y, origin.angle, HEIGHT * randomFactor(origin.minLengthFactor, origin.maxLengthFactor),
           randomFactor(1, 10),
           0,
           treeColor,
@@ -237,8 +240,8 @@ const treeColor = COLORS[randomInt(COLORS.length)];
 const trunkColors = interpolateColors(BASE_COLOR, treeColor, MAX_DEPTH);
 
 drawBranch(
-  randomFactor(100, WIDTH - 100),
-  origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
+  randomFactor(MARGIN, WIDTH - MARGIN),
+  origin.y, origin.angle, HEIGHT * randomFactor(origin.minLengthFactor, origin.maxLengthFactor),
   randomFactor(1, 10),
   0,
   treeColor,
