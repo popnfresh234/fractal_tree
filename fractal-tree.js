@@ -1,6 +1,12 @@
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
-const COLORS = ['#E43030', '#de7f28', '#E8E617', '#BDE3E4', '#56C6CE'];
+const COLORS = [
+  'rgb(228,48,48)',
+  'rgb(222,127,40)',
+  'rgb(232,230,23)',
+  'rgb(189,227,228)',
+  'rgb(142, 183, 134)',
+];
 
 const floor = [];
 
@@ -22,7 +28,9 @@ ctx.canvas.height = HEIGHT;
 const MAX_TREES = 10;
 const MAX_DEPTH = 8;
 const FRAME_RATE = 5;
-
+const BASE_COLOR = 'rgb(255, 255, 255)';
+const BROWN = 'rgb(119, 81, 59)';
+const GREEN = 'rgb(80, 127, 62)';
 
 let branchesFinished = 0;
 let treesCompleted = 0;
@@ -50,6 +58,33 @@ const origin = {
   lineWidth: 10,
 };
 
+function interpolateColor(startColor, endColor, factor) {
+  let stepFactor = factor;
+  if (arguments.length < 3) {
+    stepFactor = 0.5;
+  }
+  const result = startColor.slice();
+  for (let i = 0; i < 3; i++) {
+    result[i] = Math.round(result[i] + stepFactor * (endColor[i] - startColor[i]));
+  }
+  const colorObj = {
+    r: result[0],
+    g: result[1],
+    b: result[2],
+  };
+  return colorObj;
+}
+
+function interpolateColors(color1, color2, steps) {
+  const stepFactor = 1 / (steps - 1);
+  const interpolatedColorArray = [];
+  const startColor = color1.match(/\d+/g).map(Number);
+  const endColor = color2.match(/\d+/g).map(Number);
+  for (let i = 0; i < steps; i++) {
+    interpolatedColorArray.push(interpolateColor(startColor, endColor, stepFactor * i));
+  }
+  return interpolatedColorArray.map(colorObj => (`rgb(${colorObj.r}, ${colorObj.g}, ${colorObj.b})`));
+}
 
 function buildWaypoints(startX, startY, endX, endY) {
   const waypoints = [];
@@ -109,7 +144,7 @@ function dropLeaves() {
   }
 }
 
-function drawBranch(x, y, a, l, strokeWidth, count, color) {
+function drawBranch(x, y, a, l, strokeWidth, count, color, trunkColors) {
   let frameCount = 1;
   let waypoints = [];
 
@@ -118,7 +153,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
       ctx.beginPath();
       ctx.moveTo(waypoints[frameCount - 1].x, waypoints[frameCount - 1].y);
       ctx.lineTo(waypoints[frameCount].x, waypoints[frameCount].y);
-      ctx.strokeStyle = 'white';
+      ctx.strokeStyle = trunkColors[count];
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
       ctx.closePath();
@@ -131,7 +166,6 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
     }
     animateLine();
   }
-
 
   if (count <= MAX_DEPTH) {
     const newCount = count + 1;
@@ -147,6 +181,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
         strokeWidth * 0.7,
         newCount,
         color,
+        trunkColors,
       );
       drawBranch(
         newX, newY,
@@ -155,6 +190,7 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
         strokeWidth * 0.7,
         newCount,
         color,
+        trunkColors,
       );
     });
     if (count === MAX_DEPTH) {
@@ -180,12 +216,15 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
       branchesFinished = 0;
       treesCompleted++;
       if (treesCompleted < MAX_TREES) {
+        const treeColor = COLORS[randomInt(COLORS.length)];
+        const trunkColors = interpolateColors(BASE_COLOR, treeColor, MAX_DEPTH);
         drawBranch(
           randomFactor(100, WIDTH - 100),
           origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
           randomFactor(1, 10),
           0,
-          COLORS[randomInt(COLORS.length)],
+          treeColor,
+          trunkColors,
         );
       } else {
         dropLeaves();
@@ -194,12 +233,15 @@ function drawBranch(x, y, a, l, strokeWidth, count, color) {
   }
 }
 
+const treeColor = COLORS[randomInt(COLORS.length)];
+const trunkColors = interpolateColors(BASE_COLOR, treeColor, MAX_DEPTH);
 
 drawBranch(
   randomFactor(100, WIDTH - 100),
   origin.y, origin.angle, HEIGHT * randomFactor(0.09, 0.2),
   randomFactor(1, 10),
   0,
-  COLORS[randomInt(COLORS.length)],
+  treeColor,
+  trunkColors,
 );
 
